@@ -1,19 +1,15 @@
 var express = require("express"),
     bodyParser = require("body-parser"),
     mongoose = require("mongoose"),
+    Campground = require("./models/campgrounds"),
+    seedDB = require("./seeds"),
     app = express()
 
+seedDB();
 mongoose.connect("mongodb://localhost/yelp-camp",{useMongoClient: true});
 app.use(bodyParser.urlencoded({extended:true}));
 app.set("view engine", "ejs");
 
-var campgroundSchema  = new mongoose.Schema({
-    name: String,
-    image: String,
-    description: String
-});
-
-var Campground = mongoose.model("Campground", campgroundSchema);
 
 // Campground.create({
 //     name: "GTA 5",
@@ -66,7 +62,7 @@ app.get("/campgrounds/new", function(req, res){
 });
 
 app.get("/campgrounds/:id", function(req, res){
-    Campground.findById(req.params.id, function(err, foundCampground){
+    Campground.findById(req.params.id).populate("comments").exec(function(err, foundCampground){
         if(err){
             console.log(err);
         }else{
