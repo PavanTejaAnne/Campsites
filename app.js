@@ -1,9 +1,12 @@
 var express = require("express"),
     bodyParser = require("body-parser"),
+    User = require("./models/users"),
     mongoose = require("mongoose"),
     Campground = require("./models/campgrounds"),
     seedDB = require("./seeds"),
     Comment = require("./models/comments"),
+    passport = require("passport"),
+    Local = require("passport-local"),
     app = express()
 
 mongoose.connect("mongodb://localhost/yelp-camp",{useMongoClient: true});
@@ -12,11 +15,34 @@ app.set("view engine", "ejs");
 app.use(express.static(__dirname+"/public"));
 seedDB();
 
+
+app.use(require("express-session")({
+    secret:"FrontCamp",
+    resave: false,
+    saveUninitialized: false
+}));
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(passport.initialize());//For passport
+app.use(passport.session());//for passport
+
+//Passport configs
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+passport.use(new Local(User.authenticate));
+
+app.use(function(req, res, next){
+    res.locals.currentUser = req.user;
+    next();
+});
+
+//Home page
         
 app.get("/",function(req,res){
     res.render("home");
 });
 
+//Show campgrounds
 app.get("/campgrounds", function(req,res){
     Campground.find({}, function(err, allCampgrounds){
         if(err){
@@ -27,6 +53,8 @@ app.get("/campgrounds", function(req,res){
     });
 
 });
+
+//Add campgrounds
 
 app.post("/campgrounds", function(req,res){
     
@@ -59,7 +87,8 @@ app.get("/campgrounds/:id", function(req, res){
     });
 });
 
-app.get("/campgrounds/:id/comments/new", function(req, res){
+//Comments
+app.get("/campgrounds/:id/comments/new", isLoggedIn, function(req, res){
     Campground.findById(req.params.id, function(err, campground){
         if(err){
             console.log(err);
@@ -70,7 +99,7 @@ app.get("/campgrounds/:id/comments/new", function(req, res){
     });
 });
 
-app.post("/campgrounds/:id/comments", function(req,res){
+app.post("/campgrounds/:id/comments", isLoggedIn, function(req,res){
     Campground.findById(req.params.id, function(err, campground){
         if(err){
             console.log(err);
@@ -88,6 +117,51 @@ app.post("/campgrounds/:id/comments", function(req,res){
         }
     });
 });
+
+//Auth Routes
+
+app.get('/register', function(req, res) {
+   res.render('register'); 
+});
+
+app.post('/register', function(req, res) {
+    var newUser = new User({username: req.body.username});
+    User.register(newUser, req.body.password, function(err, user){
+       if(err){
+           console.log(err);
+           return res.render('register');
+       }
+       passport.authenticate("local")(req, res, function(){
+           res.redirect("/campgrounds");
+       });
+   }); 
+});
+
+
+app.get('/login', function(req, res) {
+    res.render('login');
+});
+
+//app.post('/route', middleware, callback)
+app.post('/login',  passport.authenticate("local",
+    {
+        successRedirect: "/campgrounds",
+        failureRedirect: "/login"
+    }), function(req,res){
+});
+
+//logout function
+app.get("/logout", function(req, res) {
+    req.logout();
+    res.redirect("/campgrounds");
+});
+
+function isLoggedIn(req, res, next){
+    if(req.isAuthenticated()){
+        return next();
+    }
+    res.redirect('/login');
+}
 
 app.listen(process.env.PORT, process.env.IP, function(){
     console.log("YelpCamp is taking off");
