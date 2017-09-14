@@ -39,9 +39,9 @@ app.use(function(req, res, next){
     next();
 });
 
-app.use(authRoute);
-app.use(campRoutes);
-app.use(commentRoute);
+app.use("/",authRoute);
+app.use("/campgrounds",campRoutes);
+app.use("/campgrounds/:id/comments",commentRoute);
 
 app.listen(process.env.PORT, process.env.IP, function(){
     console.log("YelpCamp is taking off");
