@@ -1,58 +1,58 @@
-var mongoose = require("mongoose"),
-    Campground = require("./models/campgrounds"),
-    Comment = require("./models/comments")
+var mongoose = require("mongoose");
+var Campground = require("./models/campground");
+var Comment   = require("./models/comment");
 
-var data =[
+var data = [
     {
-        name: "Mountain 1",
-        image: "http://www.photosforclass.com/download/5062575465",
-        description:"Random stuff about M1"
+        name: "Cloud's Rest", 
+        image: "https://farm4.staticflickr.com/3795/10131087094_c1c0a1c859.jpg",
+        description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"
     },
     {
-        name: "Mountain 2",
-        image: "http://www.photosforclass.com/download/7847253398",
-        description:"Random stuff about M2"
+        name: "Desert Mesa", 
+        image: "https://farm6.staticflickr.com/5487/11519019346_f66401b6c1.jpg",
+        description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"
     },
     {
-        name: "Mountain 3",
-        image: "http://www.photosforclass.com/download/14940154247",
-        description:"Random stuff about M3"
+        name: "Canyon Floor", 
+        image: "https://farm1.staticflickr.com/189/493046463_841a18169e.jpg",
+        description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum"
     }
 ]
 
-//Remove and add campgrounds    
 function seedDB(){
-    //Remove all campgrounds  
-    Campground.remove({}, function(err){
+   //Remove all campgrounds
+   Campground.remove({}, function(err){
         if(err){
             console.log(err);
         }
-        console.log("Removed entry!!")
-        //add some campgrounds
+        console.log("removed campgrounds!");
+         //add a few campgrounds
         data.forEach(function(seed){
-            Campground.create(seed, function(err, data){
-            if(err){
-                console.log(err);
-            }else{
-                console.log("added a mountain");
-                
-                Comment.create({
-                    text: "This is a sample comment",
-                    author: "Bhaskar"
-                }, function(err, comment){
-                    if(err){
-                        console.log(err);
-                    }else{
-                        data.comments.push(comment);
-                        data.save();
-                        console.log("Added a new comment");
-                    }
-                });
-            }
+            Campground.create(seed, function(err, campground){
+                if(err){
+                    console.log(err)
+                } else {
+                    console.log("added a campground");
+                    //create a comment
+                    Comment.create(
+                        {
+                            text: "This place is great, but I wish there was internet",
+                            author: "Homer"
+                        }, function(err, comment){
+                            if(err){
+                                console.log(err);
+                            } else {
+                                campground.comments.push(comment);
+                                campground.save();
+                                console.log("Created new comment");
+                            }
+                        });
+                }
+            });
         });
-    });
-}); 
-    
+    }); 
+    //add a few comments
 }
 
 module.exports = seedDB;
