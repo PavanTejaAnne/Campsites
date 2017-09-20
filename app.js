@@ -9,14 +9,20 @@ var express     = require("express"),
     Campground  = require("./models/campground"),
     Comment     = require("./models/comment"),
     User        = require("./models/user"),
-    seedDB      = require("./seeds")
+    seedDB      = require("./seeds");
     
 //requiring routes
 var commentRoutes    = require("./routes/comments"),
     campgroundRoutes = require("./routes/campgrounds"),
     indexRoutes      = require("./routes/index")
-    
-    mongoose.connect("mongodb://localhost/yelp-camp",{useMongoClient: true});
+
+ //require moment
+app.locals.moment = require('moment');
+
+// connect to  database
+var url = process.env.DATABASEURL || "mongodb://localhost/yelp-camp";
+mongoose.connect(url);
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
@@ -43,11 +49,17 @@ app.use(function(req, res, next){
    next();
 });
 
+//pass in path to view
+app.use(function(req, res, next) {
+  res.locals.current_path = req.path;
+  next();
+});
+
 app.use("/", indexRoutes);
 app.use("/campgrounds", campgroundRoutes);
 app.use("/campgrounds/:id/comments", commentRoutes);
 
 
-app.listen(process.env.PORT, process.env.IP, function(){
-   console.log("The YelpCamp Server Has Started!");
+app.listen(process.env.PORT || 3000, process.env.IP, function(){
+   console.log("Lets Get Started!");
 });
